@@ -1,6 +1,11 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\StudentController;
+use App\Http\Controllers\ReporterDashboardController;
+use App\Http\Controllers\ReporterChatController;
+use App\Http\Controllers\ReporterNotificationController;
+use App\Http\Controllers\ReporterSettingsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,6 +20,8 @@ use Illuminate\Support\Facades\Route;
 
 // Public Routes
 Route::view('/', 'campussafeline')->name('home');
+Route::view('/faqs', 'reporter.faqs')->name('faqs');
+Route::view('/about', 'about')->name('about');
 
 // Authentication Routes
 Route::middleware('guest')->group(function () {
@@ -28,21 +35,38 @@ Route::post('logout', [\App\Http\Controllers\Auth\LoginController::class, 'destr
     ->middleware('auth')
     ->name('logout');
 
-// Reporter Routes
-Route::view('/report/submit', 'reporter.submit-report')
-    ->middleware('auth')
-    ->name('report.create');
-Route::view('/report/track', 'reporter.track-case')->name('report.track');
-Route::view('/faqs', 'reporter.faqs')->name('faqs');
+// Protected Routes
+Route::middleware('auth')->group(function () {
+    // Redirect old dashboard URL to reporter dashboard
+    Route::redirect('/dashboard', '/reporter/dashboard');
 
-// Officer Routes
-Route::view('/officer/dashboard', 'officer.dashboard')->name('officer.dashboard');
-Route::view('/officer/cases', 'officer.cases')->name('officer.cases');
-Route::view('/officer/messages', 'officer.messages')->name('officer.messages');
+    // Reporter Routes
+    Route::prefix('reporter')->name('reporter.')->group(function () {
+        Route::get('/dashboard', [ReporterDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/case/{id}', [ReporterDashboardController::class, 'viewCase'])->name('case.view');
+        Route::get('/notifications', [ReporterNotificationController::class, 'index'])->name('notifications');
+        Route::get('/chat/{case}', [ReporterChatController::class, 'index'])->name('chat');
+        Route::post('/chat/{case}', [ReporterChatController::class, 'sendMessage'])->name('chat.send');
 
-// Admin Routes
-Route::view('/admin/dashboard', 'admin.dashboard')->name('admin.dashboard');
-Route::view('/admin/users', 'admin.users')->name('admin.users');
+        // Settings routes
+        Route::get('/settings', [ReporterSettingsController::class, 'index'])->name('settings');
+        Route::patch('/settings/profile', [ReporterSettingsController::class, 'updateProfile'])->name('settings.update-profile');
+        Route::patch('/settings/password', [ReporterSettingsController::class, 'updatePassword'])->name('settings.update-password');
+    });
+
+    Route::get('/report/submit', [\App\Http\Controllers\Reporter\ReportController::class, 'create'])
+        ->name('report.create');
+    Route::post('/report/submit', [\App\Http\Controllers\Reporter\ReportController::class, 'store'])
+        ->name('report.store');
+    Route::view('/report/track', 'reporter.track-case')->name('report.track');
+    Route::view('/officer/dashboard', 'officer.dashboard')->name('officer.dashboard');
+    Route::view('/officer/cases', 'officer.cases')->name('officer.cases');
+    Route::view('/officer/messages', 'officer.messages')->name('officer.messages');
+    Route::view('/admin/dashboard', 'admin.dashboard')->name('admin.dashboard');
+    Route::view('/admin/users', 'admin.users')->name('admin.users');
+    Route::view('/admin/reports', 'admin.reports')->name('admin.reports');
+    Route::view('/admin/settings', 'admin.settings')->name('admin.settings');
+});
 Route::view('/admin/reports', 'admin.reports')->name('admin.reports');
 Route::view('/admin/settings', 'admin.settings')->name('admin.settings');
 

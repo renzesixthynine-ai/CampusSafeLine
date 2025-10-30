@@ -9,9 +9,8 @@
             <div class="px-4 py-5 sm:p-6">
                 <h1 class="text-2xl font-semibold text-gray-900 mb-6">Submit a Safety Report</h1>
 
-                {{-- TODO: Update form action to route('report.store') --}}
-                <form action="#" method="POST" class="space-y-6">
-                    {{-- TODO: Add @csrf --}}
+                <form action="{{ route('report.store') }}" method="POST" class="space-y-6" enctype="multipart/form-data">
+                    @csrf
 
                     <!-- Incident Type -->
                     <div>

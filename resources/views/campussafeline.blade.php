@@ -17,7 +17,7 @@
             </p>
             <div class="mt-10 flex items-center gap-x-6">
                 @auth
-                    <a href="{{ url('/dashboard') }}"
+                    <a href="{{ auth()->user()->role === 'admin' ? route('admin.dashboard') : (auth()->user()->role === 'officer' ? route('officer.dashboard') : route('reporter.dashboard')) }}"
                        class="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
                         Go to Dashboard
                     </a>
